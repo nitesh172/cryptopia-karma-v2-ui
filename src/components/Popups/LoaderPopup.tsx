@@ -2,36 +2,33 @@ import React from 'react'
 import { useAppContext } from '../../context/AppContext'
 import Image from 'next/image'
 
-type LoaderPopupProps = {
-  close: () => void
-}
-
-const LoaderPopup: React.FC<LoaderPopupProps> = (props) => {
-  const { close } = props
-  const { loaderText, nftImage, tokenID } = useAppContext()
+const LoaderPopup = () => {
+  const { loaderText, nftImage, tokenID, loading } = useAppContext()
+  console.log(loaderText)
   return (
     <div
       className={`bg-popup_bg rounded-2xl ${
-        loaderText === 'You have successfully minted!' ? 'py-12' : 'py-32'
+        loaderText === 'You have successfully minted!'
+          ? 'py-6 md:py-12'
+          : 'py-16 md:py-32'
       } flex flex-col items-center`}
     >
-      {/* <div className="text-2xl absolute top-6 right-6" onClick={close} role="button">
-        X
-      </div> */}
       {loaderText === 'Please try again...' ? (
         <div className="text-error_red text-3xl px-12 mb-8">
           SOMETHING WENT WRONG!
         </div>
       ) : loaderText === 'You have successfully minted!' ? (
         <div className="flex flex-col items-center mb-4">
-          <img
+          <Image
             src={nftImage}
             alt="nftimage"
             width={281}
             height={421}
             className="w-[281px] h-[421px] rounded-[20px] mb-7"
           />
-          <div className="text-2xl text-center px-12">TokenID: #{tokenID}</div>
+          <div className="text-2xl text-center px-6 md:px-12">
+            TokenID: #{tokenID}
+          </div>
         </div>
       ) : (
         <Image
@@ -42,9 +39,14 @@ const LoaderPopup: React.FC<LoaderPopupProps> = (props) => {
           className="w-[600px] h-[121px]"
         />
       )}
-      <div className="text-2xl text-center px-16 text-primary">
+      <div className="text-2xl text-center px-6 md:px-16 text-white">
         {loaderText}
       </div>
+      {loading && (
+        <div className="text-sm px-4 mt-6">
+          Please wait for transaction confirmation....
+        </div>
+      )}
     </div>
   )
 }
