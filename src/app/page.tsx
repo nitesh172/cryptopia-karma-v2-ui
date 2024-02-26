@@ -259,7 +259,7 @@ export default function Home() {
     }
   }, [randomTierSucess, randomTierError])
 
-  const approveToken = (spenderAddress: string) => {
+  const approveToken = (tokenSelected: string, spenderAddress: string) => {
     const tokenAllowanceNumber = formatEther(
       selectToken === 'usdc'
         ? (usdcAllowance as bigint)
@@ -268,9 +268,10 @@ export default function Home() {
 
     let requiredTokenAmount = Number(envConfig.REQUIRED_TOKEN_AMOUNT)
 
+    console.log(selectToken)
     if (Number(tokenAllowanceNumber) < Number(requiredTokenAmount)) {
       tokenApprove({
-        address: (selectToken === 'usdc' ? usdcAddress : usdtAddress) as any,
+        address: tokenSelected === 'usdc' ? usdcAddress : usdtAddress as any,
         abi: contractAbi,
         functionName: 'approve',
         args: [spenderAddress, parseEther(requiredTokenAmount.toString())],
@@ -300,14 +301,14 @@ export default function Home() {
     openLoaderPopup()
     setLoaderText('Approve the amount to spend in your wallet.')
     setSelectToken('usdc')
-    approveToken(nftcontractAddress)
+    approveToken('usdc', nftcontractAddress)
   }
 
   const mintByUSDT = () => {
     openLoaderPopup()
     setLoaderText('Approve the amount to spend in your wallet.')
     setSelectToken('usdt')
-    approveToken(nftcontractAddress)
+    approveToken('usdt', nftcontractAddress)
   }
 
   return (
