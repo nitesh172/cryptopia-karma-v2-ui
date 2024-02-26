@@ -1,18 +1,27 @@
 import { useSDK } from '@metamask/sdk-react'
-import { images } from '../assets'
-import { Contract, ContractAbi, Web3, utils } from 'web3'
-import { ERC20_ABI } from '../assets/token_contract'
-import NFT_ABI from '../assets/contract_test.json'
+import { Contract, ContractAbi, Web3 } from 'web3'
+import { ERC20_ABI } from '../../public/token_contract'
+import NFT_ABI from '../../public/contract_test.json'
 import PopupEncloser from '../components/PopupEncloser/PopupEncloser'
 import { useAppContext } from '../context/AppContext'
 import LoaderPopup from '../components/Popups/LoaderPopup'
-import { hexToString } from 'web3-utils'
 import { useEffect } from 'react'
+import { envConfig } from '../config'
+import Image from 'next/image'
 import { useAccount } from 'wagmi'
-import { useWeb3ModalState } from '@web3modal/wagmi/react'
 
 const Home = () => {
-  const { provider, connected, chainId, ready } = useSDK()
+  const { provider, connected, chainId } = useSDK()
+
+  const { isConnected, chain } = useAccount()
+
+  const { walletAddress } = useAppContext()
+
+  const rpcProvider = connected
+    ? provider
+    : isConnected
+    ? chain?.rpcUrls.default.http.toString()
+    : null
 
   const {
     loaderPopup,
@@ -29,32 +38,29 @@ const Home = () => {
   const openLoaderPopup = () => setLoaderPopup(true)
   const closeLoaderPopup = () => setLoaderPopup(false)
 
-  // const { isConnected } = useAccount()
-  // const { selectedNetworkId } = useWeb3ModalState()
-
   const steps = [
     {
-      images: [images.binance],
+      images: ['/images/binance.svg'],
       number: 1,
       desc: 'Connect Your Wallet (Binance Smart Chain)',
     },
     {
-      images: [images.usdc, images.usdt],
+      images: ['/images/usdc.svg', '/images/usdt.svg'],
       number: 2,
       desc: 'Choose To Mint With USDT Or USDC',
     },
     {
-      images: [images.clock],
+      images: ['/images/clock.svg'],
       number: 3,
       desc: 'Approve The Spending Amount In Your Wallet',
     },
     {
-      images: [images.done],
+      images: ['/images/done.svg'],
       number: 4,
       desc: 'Confirm The Two Following Transactions In Your Wallet',
     },
     {
-      images: [images.thumbs],
+      images: ['/images/thumbs.svg'],
       number: 5,
       desc: 'It’s DONE! You Have Minted!',
     },
@@ -62,7 +68,9 @@ const Home = () => {
 
   const mintNFT = async (nftContractAddress: string, tokenAddress: string) => {
     try {
-      const web3 = new Web3(provider)
+      if (rpcProvider === null) return
+
+      const web3 = new Web3(rpcProvider)
 
       const accounts = await web3.eth.getAccounts()
 
@@ -119,7 +127,9 @@ const Home = () => {
     tokenAddress: string
   ) => {
     try {
-      const web3 = new Web3(provider)
+      if (rpcProvider === null) return
+
+      const web3 = new Web3(rpcProvider)
 
       const accounts = await web3.eth.getAccounts()
 
@@ -154,9 +164,12 @@ const Home = () => {
 
   const approveToken = async (tokenAddress: string, spenderAddress: string) => {
     try {
-      const web3 = new Web3(provider)
+      if (rpcProvider === null) return
 
-      const accounts = await web3.eth.getAccounts()
+      
+      const web3 = new Web3(rpcProvider)
+
+      const accounts = [walletAddress] || await web3.eth.getAccounts()
 
       const contractAbi = JSON.parse(JSON.stringify(ERC20_ABI))
 
@@ -176,7 +189,7 @@ const Home = () => {
       )
 
       let requiredTokenAmount = Number(
-        process.env.REACT_APP_REQUIRED_TOKEN_AMOUNT
+        envConfig.REQUIRED_TOKEN_AMOUNT
       )
 
       if (Number(tokenAllowanceNumber) < Number(requiredTokenAmount)) {
@@ -202,9 +215,9 @@ const Home = () => {
     }
   }
 
-  const nftcontractAddress = process.env.REACT_APP_NFT_CONTRACT || ''
-  const usdcAddress = process.env.REACT_APP_USDC_CONTRACT || ''
-  const usdtAddress = process.env.REACT_APP_USDT_CONTRACT || ''
+  const nftcontractAddress = envConfig.NFT_CONTRACT || ''
+  const usdcAddress = envConfig.USDC_CONTRACT || ''
+  const usdtAddress = envConfig.USDT_CONTRACT || ''
 
   const mintByUSDC = async () => {
     try {
@@ -228,7 +241,9 @@ const Home = () => {
 
   const getTotalminted = async () => {
     try {
-      const web3 = new Web3(provider)
+      if (rpcProvider === null) return setTotalMinted('-')
+
+      const web3 = new Web3(rpcProvider)
 
       const contractAbi = JSON.parse(JSON.stringify(NFT_ABI))
 
@@ -247,7 +262,9 @@ const Home = () => {
 
   const getTotalSupply = async () => {
     try {
-      const web3 = new Web3(provider)
+      if (rpcProvider === null) return setTotalSupply('-')
+
+      const web3 = new Web3(rpcProvider)
 
       const contractAbi = JSON.parse(JSON.stringify(NFT_ABI))
 
@@ -271,6 +288,13 @@ const Home = () => {
     }
   }, [provider])
 
+  useEffect(() => {
+    if (rpcProvider && isConnected) {
+      getTotalminted()
+      getTotalSupply()
+    }
+  }, [rpcProvider])
+
   return (
     <div className="px-0 md:px-12 py-24 md:py-12 bg-[#090A0C] w-full text-white h-full">
       <div className="bg-gradient rounded-t-[20px] w-full pt-20 px-8 md:px-[60px]">
@@ -293,14 +317,19 @@ const Home = () => {
               <div className="flex w-full md:w-auto flex-col items-center md:item md:flex-row gap-8">
                 <button
                   type="button"
-                  // disabled={connected || isConnected
-                  //   ? (isConnected && Number(selectedNetworkId) === Number(process.env.REACT_APP_CHAIN_ID || '')) ||
-                  //     chainId === process.env.REACT_APP_CHAIN_STRING_ID ? false : true : true}
+                  disabled={
+                    connected || isConnected
+                      ? chainId === envConfig.CHAIN_STRING_ID ||
+                        chain?.id.toString()=== envConfig.CHAIN_ID
+                        ? false
+                        : true
+                      : true
+                  }
                   onClick={mintByUSDC}
                   className="border-2 group/usdc hover:text-black hover:bg-primary hover:border-primary w-full md:w-auto justify-center border-white rounded-[20px] px-7 py-2.5 flex flex-row gap-2.5 items-center"
                 >
-                  <img
-                    src={images.usdc}
+                  <Image
+                    src="/images/usdc.svg"
                     alt="wallet_icon"
                     className="w-6 h-6"
                     width={30}
@@ -312,13 +341,18 @@ const Home = () => {
                 </button>
                 <button
                   onClick={mintByUSDT}
-                  // disabled={connected || isConnected
-                  //   ? (isConnected && Number(selectedNetworkId) === Number(process.env.REACT_APP_CHAIN_ID || '')) ||
-                  //     chainId === process.env.REACT_APP_CHAIN_STRING_ID ? false : true : true}
+                  disabled={
+                    connected || isConnected
+                      ? chainId === envConfig.CHAIN_STRING_ID ||
+                        chain?.id.toString()=== envConfig.CHAIN_ID
+                        ? false
+                        : true
+                      : true
+                  }
                   className="border-2 group/usdt hover:bg-primary hover:border-primary w-full md:w-auto justify-center border-white rounded-[20px] px-7 py-2.5 flex flex-row gap-2.5 items-center"
                 >
-                  <img
-                    src={images.usdt}
+                  <Image
+                    src="/images/usdt.svg"
                     alt="wallet_icon"
                     className="w-6 h-6"
                     width={30}
@@ -339,9 +373,11 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <img
-            src={images.nft}
+          <Image
+            src="/images/nft.png"
             alt="nft"
+            width={471}
+            height={471}
             className="w-full md:w-[471px] h-auto self-center xl:self-start md:h-[471px]"
           />
         </div>
@@ -359,7 +395,7 @@ const Home = () => {
                 <div className="flex flex-col items-center gap-5">
                   <div className="flex flex-row gap-2 items-center">
                     {step.images.map((image, inx) => (
-                      <img
+                      <Image
                         key={inx}
                         src={image}
                         width={32}
@@ -377,8 +413,8 @@ const Home = () => {
                   </div>
                 </div>
                 {step.number !== 5 && (
-                  <img
-                    src={images.green_arrow}
+                  <Image
+                    src="/images/green_arrow.svg"
                     width={14}
                     height={24}
                     className={`w-3.5 h-6 rotate-90 md:rotate-0

@@ -1,6 +1,6 @@
 import React from 'react'
-import { images } from '../../assets'
 import { useAppContext } from '../../context/AppContext'
+import Image from 'next/image'
 
 type LoaderPopupProps = {
   close: () => void
@@ -34,8 +34,8 @@ const LoaderPopup: React.FC<LoaderPopupProps> = (props) => {
           <div className="text-2xl text-center px-12">TokenID: #{tokenID}</div>
         </div>
       ) : (
-        <img
-          src={images.logo_loader}
+        <Image
+          src="/images/logo_loader.svg"
           alt="loader_logo"
           width={600}
           height={121}

@@ -39,7 +39,8 @@ export const useAppContext = () => {
 export const AppProvider = (props: AppProviderProps) => {
   const { children } = props
   const { connected, account } = useSDK()
-  // const { address, isConnected } = useAccount()
+
+  const { address, isConnected } = useAccount()
 
   const [walletAddress, setWalletAddress] = useState<string>('')
   const [loaderText, setLoaderText] = useState<string>('')
@@ -50,25 +51,17 @@ export const AppProvider = (props: AppProviderProps) => {
   const [nftImage, setNftImage] = useState<string>('')
   const [tokenID, setTokenID] = useState<string>('')
 
-  // useEffect(() => {
-  //   if (connected) {
-  //     let walletAddress = account ? account : ''
-  //     setWalletAddress(walletAddress)
-  //   } else if (isConnected && address) {
-  //     setWalletAddress(address)
-  //   } else {
-  //     setWalletAddress('')
-  //   }
-  //   console.log(connected, isConnected, address, account)
-  // }, [connected, isConnected])
   useEffect(() => {
     if (connected) {
       let walletAddress = account ? account : ''
       setWalletAddress(walletAddress)
+    } else if (isConnected && address) {
+      setWalletAddress(address)
     } else {
       setWalletAddress('')
     }
-  }, [connected])
+
+  }, [connected, isConnected])
 
   const defaultContext: AppContextType = {
     ...props,
@@ -87,7 +80,7 @@ export const AppProvider = (props: AppProviderProps) => {
     setNftImage,
     nftImage,
     tokenID,
-    setTokenID
+    setTokenID,
   }
 
   return (

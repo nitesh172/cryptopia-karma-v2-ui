@@ -11,7 +11,7 @@ const PopupEncloser = (props: PopupEncloserProps) => {
 
   const handleClose = () => close(false)
 
-  document.body.style.overflow = show ? 'hidden' : 'auto'
+  // document.body.style.overflow = show ? 'hidden' : 'auto'
 
   return show ? (
     <div
