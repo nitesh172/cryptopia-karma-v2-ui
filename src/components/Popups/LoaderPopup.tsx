@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 const LoaderPopup = () => {
   const { loaderText, nftImage, tokenID, loading } = useAppContext()
-  console.log(loaderText)
+  
   return (
     <div
       className={`bg-popup_bg rounded-2xl ${
