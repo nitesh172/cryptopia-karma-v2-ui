@@ -41,7 +41,7 @@ const LoaderPopup = () => {
           />
         )}
         <div
-          className={`"text-2xl text-center px-6 md:px-16 font-Roboto ${
+          className={`text-2xl text-center px-6 md:px-16 font-Roboto ${
             loaderText === 'You have successfully minted!'
               ? 'text-primary'
               : 'text-white'
