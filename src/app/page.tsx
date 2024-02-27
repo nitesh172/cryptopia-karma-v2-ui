@@ -284,7 +284,7 @@ export default function Home() {
         setLoading(false)
         assignRandomTier()
       }, 2000)
-    } else {
+    } else if (tokenApproveTxError) {
       setLoaderText('Please try again...')
       setSelectToken('')
       setLoading(false)
