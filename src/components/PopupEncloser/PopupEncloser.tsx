@@ -15,7 +15,7 @@ const PopupEncloser = (props: PopupEncloserProps) => {
 
   const { selectToken } = useAppContext()
 
-  if (document !== undefined) {
+  if (typeof document !== "undefined") {
     document.body.style.overflow = show ? 'hidden' : 'auto'
   }
 
