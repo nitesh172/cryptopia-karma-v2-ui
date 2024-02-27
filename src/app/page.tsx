@@ -1,6 +1,6 @@
 'use client'
 import { ERC20_ABI } from '../../public/token_contract'
-import NFT_ABI from '../../public/contract_test.json'
+import NFT_ABI from '../../public/contract.json'
 import PopupEncloser from '../components/PopupEncloser/PopupEncloser'
 import { useAppContext } from '../context/AppContext'
 import LoaderPopup from '../components/Popups/LoaderPopup'
@@ -69,20 +69,6 @@ export default function Home() {
   const contractAbi = JSON.parse(JSON.stringify(ERC20_ABI))
   const nftAbi = JSON.parse(JSON.stringify(NFT_ABI))
 
-  const { data: usdcAllowance } = useReadContract({
-    address: usdcAddress as any,
-    abi: contractAbi,
-    functionName: 'allowance',
-    args: [address || '', nftcontractAddress],
-  })
-
-  const { data: usdtAllowance } = useReadContract({
-    address: usdtAddress as any,
-    abi: contractAbi,
-    functionName: 'allowance',
-    args: [address || '', nftcontractAddress],
-  })
-
   const { data: totalMinted } = useReadContract({
     address: nftcontractAddress as any,
     abi: nftAbi,
@@ -93,6 +79,12 @@ export default function Home() {
     address: nftcontractAddress as any,
     abi: nftAbi,
     functionName: 'totalSupply',
+  })
+
+  const { data: price } = useReadContract({
+    address: nftcontractAddress as any,
+    abi: nftAbi,
+    functionName: 'usdtPrice',
   })
 
   const {
@@ -198,7 +190,7 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (mintData) {
+    if (mintData && selectToken) {
       setLoading(true)
       const txLogsTopic = mintData?.logs[0].topics as any
 
@@ -216,14 +208,16 @@ export default function Home() {
     } else if (mintDataError) {
       setLoading(false)
       setLoaderText('Please try again...')
+      setSelectToken('')
     }
   }, [mintData])
 
   useEffect(() => {
-    if (mintSuccess) {
+    if (mintSuccess && selectToken) {
       setLoading(false)
     } else if (mintError) {
       setLoaderText('Please try again...')
+      setSelectToken('')
     }
   }, [mintSuccess, mintError])
 
@@ -235,64 +229,51 @@ export default function Home() {
     setNftImage(nft.image)
     setLoading(false)
     openLoaderPopup()
+    setSelectToken('')
     setLoaderText('You have successfully minted!')
   }
 
   useEffect(() => {
-    if (uriSuccess) {
+    if (uriSuccess && selectToken) {
       getNFTImage()
     } else if (uriError) {
       setLoaderText('Please try again...')
+      setSelectToken('')
       setLoading(false)
     }
   }, [uriSuccess, uriError])
 
   useEffect(() => {
-    if (randomTierSucess) {
+    if (randomTierSucess && selectToken) {
       setLoading(false)
       openLoaderPopup()
       setLoaderText('Confirm the minting transaction in your wallet...')
       mintNFT()
     } else if (randomTierError) {
       setLoaderText('Please try again...')
+      setSelectToken('')
       setLoading(false)
     }
   }, [randomTierSucess, randomTierError])
 
   const approveToken = (tokenSelected: string, spenderAddress: string) => {
-    const tokenAllowanceNumber = formatEther(
-      selectToken === 'usdc'
-        ? (usdcAllowance as bigint)
-        : (usdtAllowance as bigint)
-    )
-
-    let requiredTokenAmount = Number(envConfig.REQUIRED_TOKEN_AMOUNT)
-
-    console.log(selectToken)
-    if (Number(tokenAllowanceNumber) < Number(requiredTokenAmount)) {
-      tokenApprove({
-        address: tokenSelected === 'usdc' ? usdcAddress : usdtAddress as any,
-        abi: contractAbi,
-        functionName: 'approve',
-        args: [spenderAddress, parseEther(requiredTokenAmount.toString())],
-      })
-      setLoading(false)
-    } else {
-      setLoaderText('Confirm the random pick transaction in your wallet...')
-
-      setLoading(false)
-      assignRandomTier()
-    }
+    tokenApprove({
+      address: tokenSelected === 'usdc' ? usdcAddress : (usdtAddress as any),
+      abi: contractAbi,
+      functionName: 'approve',
+      args: [spenderAddress, price],
+    })
   }
 
   useEffect(() => {
-    if (tokenApproveSucess) {
+    if (tokenApproveSucess && selectToken) {
       setLoading(false)
       openLoaderPopup()
       setLoaderText('Confirm the random pick transaction in your wallet...')
       assignRandomTier()
     } else if (tokenApproveError) {
       setLoaderText('Please try again...')
+      setSelectToken('')
       setLoading(false)
     }
   }, [tokenApproveSucess, tokenApproveError])
@@ -380,7 +361,7 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col gap-2.5">
                   <div className="py-2.5 w-full md:w-auto bg-background_color1 text-center text-xl rounded-[20px]">
-                    Price: $1200
+                    Price: ${price ? formatEther(price as any) : ''}
                   </div>
                   <div className="py-2.5 w-full md:w-auto bg-background_color1 text-center text-xl rounded-[20px]">
                     Total Minted:{' '}
@@ -455,7 +436,7 @@ export default function Home() {
         </PopupEncloser>
       </div>
       <footer className="h-11 px-6 rounded-t-[20px] flex flex-col justify-center bg-gradient_footer self-center">
-        <div className="text-lg text-white">
+        <div className="text-lg text-white text-center font-Roboto">
           Made by InfinityBlocks © {new Date().getFullYear()}
         </div>
       </footer>

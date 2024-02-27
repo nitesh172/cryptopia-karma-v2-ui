@@ -9,15 +9,30 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Cryptopia',
-  description: 'Cryptopia is a crypto YouTube channel, blockchain investment VC and charity',
+  description:
+    'Cryptopia is a crypto YouTube channel, blockchain investment VC and charity',
   openGraph: {
-    images: "https://cryptopia-group.com/wp-content/uploads/2022/06/cryptopia-768x432.png",
+    images:
+      'https://cryptopia-group.com/wp-content/uploads/2022/06/cryptopia-768x432.png',
     title: 'Cryptopia',
-    description: 'Cryptopia is a crypto YouTube channel, blockchain investment VC and charity',
-    type: "website",
-    url: "https://cryptopia-group.com"
+    description:
+      'Cryptopia is a crypto YouTube channel, blockchain investment VC and charity',
+    type: 'website',
+    url: 'https://cryptopia-group.com',
   },
-  icons: 'https://cryptopia-group.com/wp-content/uploads/2022/06/cropped-favicon-32x32.png'
+  icons:
+    'https://cryptopia-group.com/wp-content/uploads/2022/06/cropped-favicon-32x32.png',
+  twitter: {
+    images:
+      'https://cryptopia-group.com/wp-content/uploads/2022/06/cryptopia-768x432.png',
+    title: 'Cryptopia',
+    description:
+      'Cryptopia is a crypto YouTube channel, blockchain investment VC and charity',
+    card: 'summary_large_image',
+  },
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_WALLET_APP_URL || 'http://localhost:3000/'
+  ),
 }
 
 const orbitron = Orbitron({

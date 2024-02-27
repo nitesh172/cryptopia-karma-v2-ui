@@ -70,7 +70,6 @@ createWeb3Modal({
   allWallets: 'SHOW',
 })
 
-
 export const AppProvider = (props: AppProviderProps) => {
   const { children } = props
 

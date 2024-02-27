@@ -72,7 +72,9 @@ const Navbar = () => {
           />
           <div className="font-semibold text-lg text-black font-Jost">
             {address
-              ? address.substring(0, 5) + '....' + address?.slice(-5)
+              ? chain?.id.toString() === envConfig.CHAIN_ID
+                ? address.substring(0, 5) + '....' + address?.slice(-5)
+                : 'Invalid Chain!'
               : 'Connect Wallet'}
           </div>
         </button>
