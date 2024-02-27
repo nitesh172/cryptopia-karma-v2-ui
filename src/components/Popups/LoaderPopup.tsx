@@ -20,13 +20,17 @@ const LoaderPopup = () => {
           </div>
         ) : loaderText === 'You have successfully minted!' ? (
           <div className="flex flex-col items-center mb-4">
-            <Image
-              src={nftImage}
-              alt="nftimage"
-              width={281}
-              height={421}
-              className="w-[281px] h-[421px] rounded-[20px] mb-7"
-            />
+            {nftImage ? (
+              <Image
+                src={nftImage}
+                alt="nftimage"
+                width={281}
+                height={421}
+                className="w-[281px] h-[421px] rounded-[20px] mb-7"
+              />
+            ) : (
+              <div className="bg-[#333237] w-[281px] h-[421px] rounded-[20px] mb-7"></div>
+            )}
             <div className="text-2xl text-center font-Roboto px-6 md:px-12">
               TokenID: #{tokenID}
             </div>

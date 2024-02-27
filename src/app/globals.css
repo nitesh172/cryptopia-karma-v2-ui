@@ -3,6 +3,6 @@
 @tailwind utilities;
 
 * {
-  font-family: var(--font-orbitron);
+  font-family: var(--font-roboto);
   font-optical-sizing: auto;
 }

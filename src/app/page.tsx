@@ -14,7 +14,7 @@ import {
   useTransactionReceipt,
   useWaitForTransactionReceipt,
 } from 'wagmi'
-import { formatEther, hexToBigInt, hexToNumber, parseEther, toHex } from 'viem'
+import { formatEther, hexToBigInt, hexToNumber, toHex } from 'viem'
 
 export default function Home() {
   const { isConnected, chain, address } = useAccount()
@@ -87,38 +87,42 @@ export default function Home() {
     functionName: 'usdtPrice',
   })
 
-  const {
-    data: tokenApproveHash,
-    writeContract: tokenApprove,
-    isError: tokenApproveError,
-  } = useWriteContract()
-
-  const { isSuccess: tokenApproveSucess, isLoading: tokenApproveLoading } =
-    useWaitForTransactionReceipt({
-      hash: tokenApproveHash,
-    })
+  const { data: tokenApproveHash, writeContractAsync: tokenApprove } =
+    useWriteContract()
 
   const {
-    data: randomTierHash,
-    writeContract: randomTier,
-    isError: randomTierError,
-  } = useWriteContract()
+    isSuccess: tokenApproveSucess,
+    isLoading: tokenApproveLoading,
+    isError: tokenApproveTxError,
+  } = useWaitForTransactionReceipt({
+    hash: tokenApproveHash,
+  })
 
-  const { isSuccess: randomTierSucess, isLoading: randomTierLoading } =
-    useWaitForTransactionReceipt({
-      hash: randomTierHash,
-    })
+  const { data: randomTierHash, writeContractAsync: randomTier } =
+    useWriteContract()
 
   const {
-    data: mintHash,
-    writeContract: mint,
-    isError: mintError,
-  } = useWriteContract()
+    isSuccess: randomTierSucess,
+    isLoading: randomTierLoading,
+    isError: randomTierTxError,
+  } = useWaitForTransactionReceipt({
+    hash: randomTierHash,
+  })
 
-  const { isSuccess: mintSuccess, isLoading: mintLoading } =
+  const { data: mintHash, writeContractAsync: mint } = useWriteContract()
+
+  const { isSuccess: mintSuccess, isError: mintTxError } =
     useWaitForTransactionReceipt({
       hash: mintHash,
     })
+
+  const {
+    data: mintData,
+    isError: mintDataError,
+    isLoading: mintLoading,
+  } = useTransactionReceipt({
+    hash: mintHash,
+  })
 
   const {
     data: urlJson,
@@ -130,29 +134,6 @@ export default function Home() {
     abi: nftAbi,
     args: [tokenID],
   })
-
-  const { data: mintData, isError: mintDataError } = useTransactionReceipt({
-    hash: mintHash,
-  })
-
-  const assignRandomTier = () => {
-    const contractAbi = JSON.parse(JSON.stringify(NFT_ABI))
-    const numbers: any = []
-
-    while (numbers.length < 3) {
-      let randomNumber = Math.floor(Math.random() * 5) + 1
-      if (!numbers.includes(randomNumber)) {
-        numbers.push(randomNumber)
-      }
-    }
-
-    randomTier({
-      address: nftcontractAddress as any,
-      abi: contractAbi,
-      functionName: 'assignRandomTier',
-      args: [numbers[0], numbers[1], numbers[2]],
-    })
-  }
 
   useEffect(() => {
     if (mintLoading) {
@@ -178,49 +159,6 @@ export default function Home() {
     }
   }, [randomTierLoading])
 
-  const mintNFT = () => {
-    const contractAbi = JSON.parse(JSON.stringify(NFT_ABI))
-
-    mint({
-      address: nftcontractAddress as any,
-      functionName: 'mint',
-      abi: contractAbi,
-      args: [selectToken === 'usdc' ? usdcAddress : usdtAddress],
-    })
-  }
-
-  useEffect(() => {
-    if (mintData && selectToken) {
-      setLoading(true)
-      const txLogsTopic = mintData?.logs[0].topics as any
-
-      if (txLogsTopic && txLogsTopic.length) {
-        const tokenID = hexToNumber(txLogsTopic[3])
-
-        const fromAddress = toHex(hexToBigInt(txLogsTopic[1])).toLowerCase()
-
-        const toAddress = toHex(hexToBigInt(txLogsTopic[2])).toLowerCase()
-
-        if (toAddress === address?.toLowerCase() && fromAddress === '0x0') {
-          setTokenID(tokenID.toString())
-        }
-      }
-    } else if (mintDataError) {
-      setLoading(false)
-      setLoaderText('Please try again...')
-      setSelectToken('')
-    }
-  }, [mintData])
-
-  useEffect(() => {
-    if (mintSuccess && selectToken) {
-      setLoading(false)
-    } else if (mintError) {
-      setLoaderText('Please try again...')
-      setSelectToken('')
-    }
-  }, [mintSuccess, mintError])
-
   const getNFTImage = async () => {
     let uriReponse = await fetch(urlJson as any)
 
@@ -231,7 +169,6 @@ export default function Home() {
     openLoaderPopup()
     setSelectToken('')
     await refetch()
-    setLoaderText('You have successfully minted!')
   }
 
   useEffect(() => {
@@ -244,45 +181,121 @@ export default function Home() {
     }
   }, [uriSuccess, uriError])
 
-  useEffect(() => {
-    if (randomTierSucess && selectToken) {
-      setLoading(false)
-      openLoaderPopup()
-      setLoaderText('Confirm the minting transaction in your wallet...')
-      mintNFT()
-    } else if (randomTierError) {
+  const mintNFT = async () => {
+    try {
+      await mint({
+        address: nftcontractAddress as any,
+        functionName: 'mint',
+        abi: nftAbi,
+        args: [selectToken === 'usdc' ? usdcAddress : usdtAddress],
+      })
+    } catch (error) {
       setLoaderText('Please try again...')
       setSelectToken('')
       setLoading(false)
     }
-  }, [randomTierSucess, randomTierError])
-
-  const approveToken = (tokenSelected: string, spenderAddress: string) => {
-    tokenApprove({
-      address: tokenSelected === 'usdc' ? usdcAddress : (usdtAddress as any),
-      abi: contractAbi,
-      functionName: 'approve',
-      args: [spenderAddress, price],
-    })
   }
 
   useEffect(() => {
-    if (tokenApproveSucess && selectToken) {
+    if (mintSuccess && mintData && selectToken) {
+      const txLogsTopic = mintData?.logs[0].topics as any
+
+      if (txLogsTopic && txLogsTopic.length) {
+        const tokenID = hexToNumber(txLogsTopic[3])
+
+        const fromAddress = toHex(hexToBigInt(txLogsTopic[1])).toLowerCase()
+
+        const toAddress = toHex(hexToBigInt(txLogsTopic[2])).toLowerCase()
+
+        if (toAddress === address?.toLowerCase() && fromAddress === '0x0') {
+          setTokenID(tokenID.toString())
+          setLoaderText('You have successfully minted!')
+        }
+      }
+    } else if (mintDataError || mintTxError) {
       setLoading(false)
-      openLoaderPopup()
-      setLoaderText('Confirm the random pick transaction in your wallet...')
-      assignRandomTier()
-    } else if (tokenApproveError) {
+      setLoaderText('Please try again...')
+      setSelectToken('')
+    }
+  }, [mintSuccess, mintDataError, mintTxError])
+
+  const assignRandomTier = async () => {
+    try {
+      const numbers: any = []
+
+      while (numbers.length < 3) {
+        let maxUint256 = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + 1
+
+        if (!numbers.includes(maxUint256)) {
+          numbers.push(maxUint256)
+        }
+      }
+
+      await randomTier({
+        address: nftcontractAddress as any,
+        abi: nftAbi,
+        functionName: 'assignRandomTier',
+        // args: [5, 6, 7],
+        args: [numbers[0], numbers[1], numbers[2]],
+      })
+    } catch (error) {
       setLoaderText('Please try again...')
       setSelectToken('')
       setLoading(false)
     }
-  }, [tokenApproveSucess, tokenApproveError])
+  }
+
+  useEffect(() => {
+    if (randomTierSucess && selectToken) {
+      openLoaderPopup()
+      setLoading(false)
+      setLoaderText('Confirm the minting transaction in your wallet...')
+      mintNFT()
+    } else if (randomTierTxError) {
+      setLoaderText('Please try again...')
+      setSelectToken('')
+      setLoading(false)
+    }
+  }, [randomTierSucess, randomTierTxError])
+
+  const approveToken = async (
+    tokenSelected: string,
+    spenderAddress: string
+  ) => {
+    try {
+      await tokenApprove({
+        address: (tokenSelected === 'usdc' ? usdcAddress : usdtAddress) as any,
+        abi: contractAbi,
+        functionName: 'approve',
+        args: [spenderAddress, price],
+      })
+    } catch (error) {
+      setLoaderText('Please try again...')
+      setSelectToken('')
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (tokenApproveSucess && selectToken && !tokenApproveLoading) {
+      setTimeout(() => {
+        openLoaderPopup()
+        setLoaderText('Confirm the random pick transaction in your wallet...')
+        setLoading(false)
+        assignRandomTier()
+      }, 2000)
+    } else {
+      setLoaderText('Please try again...')
+      setSelectToken('')
+      setLoading(false)
+    }
+  }, [tokenApproveSucess, tokenApproveTxError])
 
   const mintByUSDC = () => {
     openLoaderPopup()
     setLoaderText('Approve the amount to spend in your wallet.')
     setSelectToken('usdc')
+    setNftImage('')
     approveToken('usdc', nftcontractAddress)
   }
 
@@ -290,6 +303,7 @@ export default function Home() {
     openLoaderPopup()
     setLoaderText('Approve the amount to spend in your wallet.')
     setSelectToken('usdt')
+    setNftImage('')
     approveToken('usdt', nftcontractAddress)
   }
 
@@ -299,9 +313,11 @@ export default function Home() {
         <div className="bg-gradient rounded-t-[20px] w-full pt-20 px-8 md:px-[60px]">
           <div className="flex flex-col xl:flex-row gap-16 justify-between">
             <div className="flex flex-col gap-8">
-              <div className="text-[40px] md:text-6xl font-bold text-primary text-center md:text-left">
+              <div className="text-[40px] md:text-6xl font-bold font-Orbitron text-primary text-center md:text-left">
                 KARMA{' '}
-                <span className="font-normal text-white">v2 Collection</span>
+                <span className="font-normal text-white font-Orbitron">
+                  v2 Collection
+                </span>
               </div>
               <div className="text-sm tracking-widest leading-7 text-center md:text-left">
                 Spanning Common Butterflies to Legendary Lions, with Uncommon
