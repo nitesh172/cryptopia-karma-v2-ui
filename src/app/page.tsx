@@ -69,7 +69,7 @@ export default function Home() {
   const contractAbi = JSON.parse(JSON.stringify(ERC20_ABI))
   const nftAbi = JSON.parse(JSON.stringify(NFT_ABI))
 
-  const { data: totalMinted } = useReadContract({
+  const { data: totalMinted, refetch } = useReadContract({
     address: nftcontractAddress as any,
     abi: nftAbi,
     functionName: 'totalMinted',
@@ -230,6 +230,7 @@ export default function Home() {
     setLoading(false)
     openLoaderPopup()
     setSelectToken('')
+    await refetch()
     setLoaderText('You have successfully minted!')
   }
 
