@@ -2,6 +2,20 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
+Firest, create .env.local file:
+
+```bash
+NEXT_PUBLIC_WALLET_CONNECT_API_KEY="Your wallet connect api key"
+NEXT_PUBLIC_WALLET_APP_NAME="Your App name"
+NEXT_PUBLIC_WALLET_APP_DESCRIPTION="Your app description"
+NEXT_PUBLIC_WALLET_APP_URL="Your website url"
+NEXT_PUBLIC_WALLET_APP_ICON_URL="Your app icon url"
+NEXT_PUBLIC_NFT_CONTRACT="Your nft contract address"
+NEXT_PUBLIC_USDC_CONTRACT="Your usdc contract address"
+NEXT_PUBLIC_USDT_CONTRACT="Your usdt contract address"
+NEXT_PUBLIC_CHAIN_ID=97 # For bsc testnet use 97 or bsc mainnet use 56
+```
+
 First, run the development server:
 
 ```bash
