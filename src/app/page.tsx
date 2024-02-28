@@ -15,9 +15,12 @@ import {
   useWaitForTransactionReceipt,
 } from 'wagmi'
 import { formatEther, hexToBigInt, hexToNumber, toHex } from 'viem'
+import { useWeb3Modal } from '@web3modal/wagmi/react'
 
 export default function Home() {
   const { isConnected, chain, address } = useAccount()
+
+  const { open } = useWeb3Modal()
 
   const {
     loaderPopup,
@@ -292,19 +295,35 @@ export default function Home() {
   }, [tokenApproveSucess, tokenApproveTxError])
 
   const mintByUSDC = () => {
-    openLoaderPopup()
-    setLoaderText('Approve the amount to spend in your wallet.')
-    setSelectToken('usdc')
-    setNftImage('')
-    approveToken('usdc', nftcontractAddress)
+    if (isConnected) {
+      if (chain?.id.toString() === envConfig.CHAIN_ID) {
+        openLoaderPopup()
+        setLoaderText('Approve the amount to spend in your wallet.')
+        setSelectToken('usdc')
+        setNftImage('')
+        approveToken('usdc', nftcontractAddress)
+      } else {
+        open({ view: 'Networks' })
+      }
+    } else {
+      open({ view: 'Connect' })
+    }
   }
 
   const mintByUSDT = () => {
-    openLoaderPopup()
-    setLoaderText('Approve the amount to spend in your wallet.')
-    setSelectToken('usdt')
-    setNftImage('')
-    approveToken('usdt', nftcontractAddress)
+    if (isConnected) {
+      if (chain?.id.toString() === envConfig.CHAIN_ID) {
+        openLoaderPopup()
+        setLoaderText('Approve the amount to spend in your wallet.')
+        setSelectToken('usdt')
+        setNftImage('')
+        approveToken('usdt', nftcontractAddress)
+      } else {
+        open({ view: 'Networks' })
+      }
+    } else {
+      open({ view: 'Connect' })
+    }
   }
 
   return (
@@ -332,13 +351,6 @@ export default function Home() {
                 <div className="flex w-full md:w-auto flex-col items-center md:item md:flex-row gap-8">
                   <button
                     type="button"
-                    disabled={
-                      isConnected
-                        ? chain?.id.toString() === envConfig.CHAIN_ID
-                          ? false
-                          : true
-                        : true
-                    }
                     onClick={mintByUSDC}
                     className="border-2 group/usdc hover:text-black hover:bg-primary hover:border-primary w-full md:w-auto justify-center border-white rounded-[20px] px-7 py-2.5 flex flex-row gap-2.5 items-center"
                   >
@@ -355,13 +367,6 @@ export default function Home() {
                   </button>
                   <button
                     onClick={mintByUSDT}
-                    disabled={
-                      isConnected
-                        ? chain?.id.toString() === envConfig.CHAIN_ID
-                          ? false
-                          : true
-                        : true
-                    }
                     className="border-2 group/usdt hover:bg-primary hover:border-primary w-full md:w-auto justify-center border-white rounded-[20px] px-7 py-2.5 flex flex-row gap-2.5 items-center"
                   >
                     <Image
