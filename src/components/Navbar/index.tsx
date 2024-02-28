@@ -1,5 +1,5 @@
 'use client'
-import { envConfig } from '../../config'
+import { envConfig } from '@/config'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
 import { useWeb3Modal } from '@web3modal/wagmi/react'
@@ -39,8 +39,9 @@ const Navbar = () => {
         src="/images/logo.png"
         alt="logo"
         className="h-[75px] w-[329px]"
+        height={75}
         width={329}
-        height={329}
+        loading='eager'
       />
       <div className="flex flex-row gap-7">
         <div
@@ -54,6 +55,7 @@ const Navbar = () => {
               alt="chain_icon"
               width={28}
               height={28}
+              loading='eager'
               className="h-7 w-7"
             />
           </div>
@@ -68,7 +70,8 @@ const Navbar = () => {
             alt="wallet_icon"
             className="w-6 h-6"
             width={24}
-            height={19}
+            loading='eager'
+            height={24}
           />
           <div className="font-semibold text-lg text-black font-Jost">
             {address
