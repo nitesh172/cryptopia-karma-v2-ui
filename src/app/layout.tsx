@@ -4,35 +4,30 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 import { AppProvider } from '@/context/AppContext'
 import { Jost, Orbitron, Roboto, Urbanist } from 'next/font/google'
+import { envConfig } from '@/config'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Cryptopia',
-  description:
-    'Cryptopia is a crypto YouTube channel, blockchain investment VC and charity',
+  title: envConfig.WALLET_APP_NAME,
+  description: envConfig.WALLET_APP_DESCRIPTION,
   openGraph: {
     images:
       'https://cryptopia-group.com/wp-content/uploads/2022/06/cryptopia-768x432.png',
-    title: 'Cryptopia',
-    description:
-      'Cryptopia is a crypto YouTube channel, blockchain investment VC and charity',
+    title: envConfig.WALLET_APP_NAME,
+    description: envConfig.WALLET_APP_DESCRIPTION,
     type: 'website',
-    url: 'https://cryptopia-group.com',
+    url: envConfig.WALLET_APP_URL,
   },
-  icons:
-    'https://cryptopia-group.com/wp-content/uploads/2022/06/cropped-favicon-32x32.png',
+  icons: envConfig.WALLET_APP_ICON_URL,
   twitter: {
     images:
       'https://cryptopia-group.com/wp-content/uploads/2022/06/cryptopia-768x432.png',
-    title: 'Cryptopia',
-    description:
-      'Cryptopia is a crypto YouTube channel, blockchain investment VC and charity',
+    title: envConfig.WALLET_APP_NAME,
+    description: envConfig.WALLET_APP_DESCRIPTION,
     card: 'summary_large_image',
   },
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_WALLET_APP_URL || 'http://localhost:3000/'
-  ),
+  metadataBase: new URL(envConfig.WALLET_APP_URL || 'http://localhost:3000/'),
 }
 
 const orbitron = Orbitron({
