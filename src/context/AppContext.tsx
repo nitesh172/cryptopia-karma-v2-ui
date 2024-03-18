@@ -5,7 +5,7 @@ import { createWeb3Modal } from '@web3modal/wagmi/react'
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
 
 import { WagmiProvider, cookieStorage, createStorage } from 'wagmi'
-import { bsc, bscTestnet } from 'wagmi/chains'
+import { bsc } from 'wagmi/chains'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 export type AppContextType = {
@@ -47,7 +47,7 @@ const walletMetaData = {
   icons: [envConfig.WALLET_APP_ICON_URL || ''],
 }
 
-const chains = [bsc, bscTestnet] as const
+const chains = [bsc] as const
 
 const config = defaultWagmiConfig({
   chains: chains,

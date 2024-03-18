@@ -767,6 +767,19 @@
     {
         "inputs": [
             {
+                "internalType": "uint256",
+                "name": "_newmaxMintAmount",
+                "type": "uint256"
+            }
+        ],
+        "name": "setMaxMintAmount",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "bool",
                 "name": "_paused",
                 "type": "bool"
@@ -838,19 +851,6 @@
             }
         ],
         "name": "setTierTwoBaseURI",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_newmaxMintAmount",
-                "type": "uint256"
-            }
-        ],
-        "name": "setmaxMintAmount",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -1200,13 +1200,6 @@
             }
         ],
         "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "withdraw",
-        "outputs": [],
-        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
